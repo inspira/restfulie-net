@@ -5,6 +5,7 @@ using System.Dynamic;
 using System.Reflection;
 using RestfulieClient.service;
 using System.Globalization;
+using System.Collections.Generic;
 
 namespace RestfulieClient.resources
 {
@@ -15,14 +16,19 @@ namespace RestfulieClient.resources
         public HttpRemoteResponse WebResponse { get; private set; }
         public IRemoteResourceService RemoteResourceService { get; private set; }
         public NumberFormatInfo NumberFormatInfo { get; set; }
+        private XElement _xmlRepresentation;
         public XElement XmlRepresentation
         {
             get
             {
-                if (this.WebResponse.HasNoContent())
-                    return null;
-                else
-                    return XElement.Parse(this.WebResponse.Content);
+                if (_xmlRepresentation == null)
+                {
+                    if (this.WebResponse.HasNoContent())
+                        return null;
+                    else
+                        _xmlRepresentation = XElement.Parse(this.WebResponse.Content);
+                }
+                return _xmlRepresentation;
             }
         }
 
@@ -30,6 +36,11 @@ namespace RestfulieClient.resources
         {
             this.WebResponse = response;
             this.NumberFormatInfo = System.Globalization.NumberFormatInfo.CurrentInfo;
+        }
+
+        public DynamicXmlResource(XElement element)
+        {
+            this._xmlRepresentation = element;
         }
 
         public DynamicXmlResource(HttpRemoteResponse response, IRemoteResourceService remoteService)
@@ -41,8 +52,7 @@ namespace RestfulieClient.resources
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             string fieldName = binder.Name.Replace("_", "-").ToLower();
-            XElement firstElement = this.GetFirstElementWithName(fieldName);
-            result = this.GetValueFromXmlElement(firstElement);
+            result = this.ParseXmlElement(fieldName);
             return result != null ? true : false;
         }
 
@@ -64,6 +74,27 @@ namespace RestfulieClient.resources
                 result = resource;
             }
             return result != null ? true : false;
+        }
+
+        private object ParseXmlElement(string fieldName)
+        {
+            List<XElement> elements = XmlRepresentation.Elements(fieldName).ToList();
+
+            if (elements.Count == 1)
+            {
+                XElement firstElement = elements[0];
+                return this.GetValueFromXmlElement(firstElement);
+            }
+            else
+            {
+                List<object> objects = new List<object>();
+                foreach (XElement element in elements)
+                {
+                    objects.Add(this.GetValueFromXmlElement(element));
+                }
+                return objects;
+            }
+
         }
 
         private object InvokeRemoteResource(string url, string transitionName)
