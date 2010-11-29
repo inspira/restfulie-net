@@ -14,10 +14,17 @@ namespace RestfulieClient.resources
         private string accepts = "";
 
         private RestfulieHttpVerbDiscovery httpVerbDiscovery = new RestfulieHttpVerbDiscovery();
+        private NetworkCredential credentials;
 
         public EntryPointService(string uri)
         {
             this.entryPointURI = uri;
+        }
+
+        public EntryPointService(string uri, NetworkCredential credentials)
+        {
+            this.entryPointURI = uri;
+            this.credentials = credentials;
         }
 
         public dynamic As(string contentType)
@@ -99,6 +106,12 @@ namespace RestfulieClient.resources
         {
             Uri requestUri = new Uri(this.entryPointURI);
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(requestUri);
+
+            if (this.credentials != null)
+            {
+                request.Credentials = credentials;
+            }
+
             try
             {
                 request.Method = httpVerb;

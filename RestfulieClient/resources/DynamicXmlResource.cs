@@ -120,7 +120,7 @@ namespace RestfulieClient.resources
             {
                 if (element.HasElements)
                 {
-                    return new DynamicXmlResource(this.WebResponse);
+                    return new DynamicXmlResource(element);
                 }
                 else
                 {
@@ -131,12 +131,12 @@ namespace RestfulieClient.resources
             return null;
         }
 
-        private XElement GetFirstElementWithName(string name)
-        {
-            XElement firstElement = XmlRepresentation.Descendants(name).FirstOrDefault();
+        //private XElement GetFirstElementWithName(string name)
+        //{
+        //    XElement firstElement = XmlRepresentation.Descendants(name).FirstOrDefault();
 
-            return firstElement;
-        }
+        //    return firstElement;
+        //}
 
         private object GetValueFromAttributeName(string name, string attributeName)
         {

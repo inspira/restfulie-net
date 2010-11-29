@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using RestfulieClient.service;
 using System.Dynamic;
+using System.Net;
 
 namespace RestfulieClient.resources
 {
@@ -21,9 +22,20 @@ namespace RestfulieClient.resources
             this.EntryPointService = new EntryPointService(uri);
         }
 
+        private Restfulie(string uri, NetworkCredential credentials)
+        {
+            this.EntryPointService = new EntryPointService(uri, credentials);
+        }
+
         public static IRemoteResourceService At(string uri)
         {
             Restfulie entryPoint = new Restfulie(uri);
+            return entryPoint.EntryPointService;
+        }
+
+        public static IRemoteResourceService At(string uri, NetworkCredential credentials)
+        {
+            Restfulie entryPoint = new Restfulie(uri, credentials);
             return entryPoint.EntryPointService;
         }
 
